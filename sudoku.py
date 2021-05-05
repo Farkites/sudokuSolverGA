@@ -59,8 +59,8 @@ def count_duplicates(seq):
 
 
 puzzle = sudoku_data_generator.Sudoku(difficulty=3)
-data = puzzle.puzzle_flat
-
+puzzle_ref = puzzle.puzzle_flat
+side = puzzle.side
 row_idx, col_idx, box_idx = get_indices(base=puzzle.base)
 
 def evaluate(self):
@@ -77,6 +77,11 @@ def evaluate(self):
     for box in box_idx:
         n_error += count_duplicates([repres[b] for b in box])
 
+    # penalize deviation from initial puzzle
+    for pos, v in enumerate(puzzle_ref):
+        if repres[pos] != v:
+            n_error += 9
+
     return n_error
 
 def get_neighbours(self):
@@ -87,13 +92,27 @@ def get_neighbours(self):
 Individual.evaluate = evaluate
 Individual.get_neighbours = get_neighbours
 
+def get_pop_sepcs(option):
+    if option == 1:
+        replacement = False
+        valid_set = [i for _ in range(side) for i in range(1, side +1)]
+
+    elif option == 2:
+        replacement = True
+        valid_set = list(range(1,side+1))
+
+
+    return replacement, valid_set
+
+replacement, valid_set = get_pop_sepcs(option=1)
+
 if __name__ == '__main__':
 
     pop = Population(
-        size=100, optim="min", sol_size=len(data), valid_set=list(range(1,10)), replacement=True)
+        size=300, optim="min", sol_size=side*side, valid_set=valid_set, replacement=replacement)
 
     pop.evolve(
-        gens=300,
+        gens=100,
         select= tournament,
         crossover= single_point_co,
         mutate=swap_mutation,
