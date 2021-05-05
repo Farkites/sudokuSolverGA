@@ -2,6 +2,7 @@ from random import sample, choice
 from itertools import islice
 from copy import deepcopy
 
+
 class Sudoku:
     """
     https://stackoverflow.com/questions/45471152/how-to-create-a-sudoku-puzzle-in-python
@@ -15,6 +16,7 @@ class Sudoku:
         self.clearance_rate = self.encode_difficulty()
         self.board = self.build_board()
         self.puzzle = self.build_puzzle()
+        self.puzzle_flat = [n for row in self.puzzle for n in row]
 
     def encode_difficulty(self):
         difficulty = self.difficulty
@@ -66,10 +68,29 @@ class Sudoku:
         board = puzzle
         size = len(board)
         block = int(size ** 0.5)
+        # flatten board
         board = [n for row in board for n in row]
-        span = {(n, p): {(g, n) for g in (n > 0) * [p // size, size + p % size,
-                                                    2 * size + p % size // block + p // size // block * block]}
-                for p in range(size * size) for n in range(size + 1)}
+
+        def build_span(_size, _block):
+            span_dict = {}
+            for p in range(_size * _size):
+                for n in range(_size + 1):
+                    if n != 0:
+                        tmp = (
+                            p // _size,
+                            _size + p % _size,
+                            2 * _size + p % _size // _block + p // _size // _block * _block
+                        )
+                        set_tmp = set()
+                        for g in tmp:
+                            set_tmp.add((g, n))
+
+                        span_dict[(n, p)] = set_tmp
+                    else:
+                        span_dict[(n, p)] = set()
+            return span_dict
+
+        span = build_span(size, block)
         empties = [i for i, n in enumerate(board) if n == 0]
         used = set().union(*(span[n, p] for p, n in enumerate(board) if n))
         empty = 0
@@ -129,8 +150,11 @@ class Sudoku:
 
 
 if __name__ == '__main__':
-    puzzle = Sudoku(3)
-    puzzle.build_puzzle()
-    puzzle.pretty_print_solution()
-    puzzle.pretty_print_puzzle()
+    puz = Sudoku(3)
+    puz.build_puzzle()
+    puz.pretty_print_solution()
     print('ok')
+    puz.pretty_print_puzzle()
+
+
+
