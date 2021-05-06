@@ -5,10 +5,12 @@ from charles.selection import fps, tournament
 from charles.mutation import binary_mutation, swap_mutation
 from charles.crossover import single_point_co
 from random import random, sample, randint
-from operator import  attrgetter
+from operator import attrgetter
 from charles.sudoku_utils import get_indices, count_duplicates
+from random import choice
 
-puzzle = sudoku_data_generator.Sudoku(difficulty=3)
+
+puzzle = sudoku_data_generator.Sudoku(difficulty=1)
 puzzle_ref = puzzle.puzzle_flat
 side = puzzle.side
 row_idx, col_idx, box_idx = get_indices(base=puzzle.base)
@@ -36,6 +38,21 @@ def evaluate(self):
     return n_error
 
 
+def to_array(matrix):
+    array = [n for row in matrix for n in row]
+    return array
+
+
+def create_representation(self):
+    matrix = deepcopy(puzzle.puzzle)
+    for row in matrix:
+        while 0 in row:
+            insert_digit = choice(list(set(range(1, 10))-set(row)))
+            if insert_digit not in row:
+                row[row.index(0)] = insert_digit
+    return to_array(matrix)
+
+
 def get_neighbours(self):
     pass
 
@@ -43,7 +60,7 @@ def get_neighbours(self):
 # Monkey Patching
 Individual.evaluate = evaluate
 Individual.get_neighbours = get_neighbours
-
+Individual.create_representation = create_representation
 
 
 if __name__ == '__main__':
@@ -53,12 +70,12 @@ if __name__ == '__main__':
 
     pop.evolve(
         gens=100,
-        select= tournament,
-        crossover= single_point_co,
+        select=tournament,
+        crossover=single_point_co,
         mutate=swap_mutation,
         co_p=0.7,
         mu_p=0.2,
-        elitism=False
+        elitism=True
     )
 
-    print('ok')
+    print(min(pop.individuals, key=attrgetter("fitness")).representation)

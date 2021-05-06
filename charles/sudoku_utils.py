@@ -1,3 +1,4 @@
+import numpy as np
 
 def get_box_indices(base=3):
     """
@@ -51,7 +52,7 @@ def count_duplicates(seq):
     return counter
 
 
-def get_pop_sepcs(option):
+def get_pop_specs(option, side):
     if option == 1:
         replacement = False
         valid_set = [i for _ in range(side) for i in range(1, side +1)]
