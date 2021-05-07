@@ -1,4 +1,5 @@
 from random import randint, sample
+from copy import deepcopy
 
 def template_mutation(individual):
     """[summary]
@@ -42,7 +43,7 @@ def swap_mutation(individual):
     # Get two mutation points
     mut_points = sample(range(len(individual)), 2)
     # Rename to shorten variable name
-    i = individual
+    i = deepcopy(individual)
 
     i[mut_points[0]], i[mut_points[1]] = i[mut_points[1]], i[mut_points[0]]
 
