@@ -11,7 +11,8 @@ from charles.sudoku_utils import get_indices, count_duplicates, find_init_positi
 from random import choice
 
 
-puzzle = Sudoku(difficulty=3)
+puzzle = Sudoku()
+puzzle.build_puzzle(difficulty=3)
 puzzle_ref = puzzle.puzzle_flat
 side = puzzle.side
 row_idx, col_idx, box_idx = get_indices(base=puzzle.base)
@@ -59,7 +60,7 @@ def create_representation(self):
 
 def mutate(individual):
     indv_without_init = drop_init_positions(individual, init_positions)
-    i = inversion_mutation(indv_without_init)
+    i = swap_mutation(indv_without_init)
     return include_init_positions(i, init_positions)
 
 
@@ -103,3 +104,10 @@ if __name__ == '__main__':
     # sol_board.pretty_print_solution()
     print(f'Puzzle: \n{puzzle_ref}')
     print(f'Best solution (Fitness = {best.fitness}): \n{best.representation}')
+    puzzle.pretty_print_puzzle()
+
+    puzzle.fitness = best.fitness
+    puzzle.add_solution(best.representation)
+    puzzle.pretty_print_solution()
+    print('ok')
+

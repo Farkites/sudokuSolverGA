@@ -2,21 +2,26 @@ from random import sample, choice
 from itertools import islice
 from copy import deepcopy
 
+from charles.sudoku_utils import get_row_indices, find_init_positions
+from charles.utils import color
+
 
 class Sudoku:
     """
     https://stackoverflow.com/questions/45471152/how-to-create-a-sudoku-puzzle-in-python
 
     """
-    def __init__(self, difficulty):
-        base = 3
+    def __init__(self, base=3):
         self.base = base
         self.side = base * base
-        self.difficulty = difficulty
-        self.clearance_rate = self.encode_difficulty()
-        self.board = self.build_board()
-        self.puzzle = self.build_puzzle()
-        self.puzzle_flat = [n for row in self.puzzle for n in row]
+        self.difficulty = None #difficulty
+        # self.clearance_rate = self.encode_difficulty()
+        self.board = None #self.build_board()
+        self.puzzle = None #self.build_puzzle()
+        self.puzzle_flat =  None # [n for row in self.puzzle for n in row]
+        self.solution_flat = None
+        self.solution = None
+        self.fitness = None
 
     def encode_difficulty(self):
         difficulty = self.difficulty
@@ -31,7 +36,7 @@ class Sudoku:
 
         return clearance_rate
 
-    def build_board(self):
+    def build_board_random(self):
         base = self.base
         side = self.side
 
@@ -48,14 +53,25 @@ class Sudoku:
 
         # produce board using randomized baseline pattern
         board = [[nums[pattern(r, c)] for c in cols] for r in rows]
-        return board
+        self.board = board
 
-    def _clear_board(self):
+    def build_board_from_vector(self, flattboard):
+        if len(flattboard) != self.base**4:
+            raise ValueError('')
+
+        if not isinstance(flattboard, list):
+            raise ValueError('flattboard needs to be of type list')
+
+        idx = get_row_indices(self.base)
+        return [[flattboard[i] for i in row] for row in idx]
+
+
+    def _clear_board(self, difficulty):
         board = deepcopy(self.board)
         side = self.side
 
         squares = side * side
-        empties = squares * self.difficulty//4
+        empties = squares * difficulty//4
         for p in sample(range(squares), empties):
             board[p // side][p % side] = 0
 
@@ -105,15 +121,18 @@ class Sudoku:
                 yield solution
                 empty -= 1
 
-    def build_puzzle(self):
+    def build_puzzle(self, difficulty=3):
         """
 
         :return: puzzle with only 1 solution
         """
+        if self.board is None:
+            print('No board instantiazied. Creating random board...')
+            self.build_board_random()
 
         solution = self.board
         # init puzzlewith 75% of the fields cleared from the solution
-        puzzle = self._clear_board()
+        puzzle = self._clear_board(difficulty)
         while True:
             solved = [*islice(self._solve(puzzle), 2)]
             if len(solved) == 1: break
@@ -122,10 +141,15 @@ class Sudoku:
             r, c = choice(diffPos)
             puzzle[r][c] = solution[r][c]
 
-        return puzzle
+        self.puzzle = puzzle
+        self.puzzle_flat = [n for row in puzzle for n in row]
+
+    def add_solution(self, solution_flat):
+        self.solution_flat = solution_flat
+        self.solution = self.build_board_from_vector(solution_flat)
 
 
-    def _pretty_print(self, board):
+    def _pretty_print(self, board, mark=False):
         def expandLine(line):
             return line[0] + line[5:9].join([line[1:5] * (self.base - 1)] * self.base) + line[9:13]
 
@@ -136,25 +160,47 @@ class Sudoku:
         line4 = expandLine("╚═══╧═══╩═══╝")
 
         symbol = " 1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        nums = [[""] + [symbol[n] for n in row] for row in board]
+
+        if mark:
+            nums = []
+            for row_idx, row in enumerate(board):
+                line = ['']
+                for col_idx, n in enumerate(row):
+                    pos_fmt = ['', '']
+                    # check if was init pos
+                    if self.puzzle[row_idx][col_idx] != 0: #n == 2:
+                        #col = [color.BOLD, color.END]
+                        #line.append(color.BOLD + symbol[n] + color.END)
+                        pos_fmt[0] = color.BOLD
+                        pos_fmt[1] = color.END
+                    if self.board[row_idx][col_idx] != n:
+                        pos_fmt[0] = pos_fmt[0] + color.RED
+                        pos_fmt[1] = color.END
+                        #line.append(color.RED + symbol[n] + color.END)
+                    line.append(pos_fmt[0] + symbol[n] + pos_fmt[1])
+                nums.append(line)
+        else:
+            nums = [[""] + [symbol[n] for n in row] for row in board]
+
         print(line0)
         for r in range(1, self.side + 1):
             print("".join(n + s for n, s in zip(nums[r - 1], line1.split("."))))
             print([line2, line3, line4][(r % self.side == 0) + (r % self.base == 0)])
 
     def pretty_print_solution(self):
-        self._pretty_print(self.board)
+        # board[0][0] = color.BLUE + 'Hello World !' + color.BLUE
+        self._pretty_print(self.solution, mark=True)
 
     def pretty_print_puzzle(self):
         self._pretty_print(self.puzzle)
 
+    def pretty_print_board(self):
+        self._pretty_print(self.board)
+
 
 if __name__ == '__main__':
-    puz = Sudoku(3)
+    puz = Sudoku(1)
     puz.build_puzzle()
     puz.pretty_print_solution()
     print('ok')
     puz.pretty_print_puzzle()
-
-
-
