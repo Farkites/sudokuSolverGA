@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 
 def get_box_indices(base=3):
     """
@@ -63,3 +64,23 @@ def get_pop_specs(option, side):
 
 
     return replacement, valid_set
+
+
+def find_init_positions(flat_puzzle):
+    init_positions = []
+    for idx, v in enumerate(flat_puzzle):
+        if v != 0:
+            init_positions.append((idx, v))
+    return init_positions
+
+
+def drop_init_positions(flat_board, init_positions):
+    init_idx = [i[0] for i in init_positions]
+    return [v for pos, v in enumerate(flat_board) if pos not in init_idx]
+
+
+def include_init_positions(flat_board_without_init, init_postitions):
+    flat_board_inserted = deepcopy(flat_board_without_init)
+    for pos in init_postitions:
+        flat_board_inserted.insert(pos[0], pos[1])
+    return flat_board_inserted

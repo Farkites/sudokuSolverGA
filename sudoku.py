@@ -2,44 +2,16 @@ from charles.charles import Population, Individual
 from copy import deepcopy
 from data.sudoku_data_generator import Sudoku
 from charles.selection import fps, tournament
-from charles.mutation import binary_mutation, swap_mutation
+from charles.mutation import binary_mutation, swap_mutation, inversion_mutation
 from charles.crossover import single_point_co
 from random import random, sample, randint
 from operator import attrgetter
-from charles.sudoku_utils import get_indices, count_duplicates
+from charles.sudoku_utils import get_indices, count_duplicates, find_init_positions, drop_init_positions, \
+    include_init_positions
 from random import choice
 
-def find_init_positions(flat_puzzle):
-    init_positions = []
-    for idx, v in enumerate(flat_puzzle):
-        if v != 0:
-            init_positions.append((idx, v))
-    return init_positions
 
-def drop_init_positions(flat_board, init_positions):
-    init_idx = [i[0] for i in init_positions]
-    return [v for pos, v in enumerate(flat_board) if pos not in init_idx]
-
-def include_init_positions(flat_board_without_init, init_postitions):
-    flat_board_inserted = deepcopy(flat_board_without_init)
-    for pos in init_postitions:
-        flat_board_inserted.insert(pos[0], pos[1])
-    return flat_board_inserted
-
-def mutation_wrapper(individual, mutation, init_positions):
-    indv_without_init = drop_init_positions(individual, init_positions)
-    i = mutation(indv_without_init)
-    return include_init_positions(i, init_positions)
-
-def bla(mutation):
-    def mutation_wrapper(individual, mutation, init_positions):
-        indv_without_init = drop_init_positions(individual, init_positions)
-        i = mutation(indv_without_init)
-        return include_init_positions(i, init_positions)
-    return mutation_wrapper
-
-
-puzzle = Sudoku(difficulty=1)
+puzzle = Sudoku(difficulty=3)
 puzzle_ref = puzzle.puzzle_flat
 side = puzzle.side
 row_idx, col_idx, box_idx = get_indices(base=puzzle.base)
@@ -84,8 +56,24 @@ def create_representation(self):
     return to_array(matrix)
 
 
-def get_neighbours(self):
-    pass
+
+def mutate(individual):
+    indv_without_init = drop_init_positions(individual, init_positions)
+    i = inversion_mutation(indv_without_init)
+    return include_init_positions(i, init_positions)
+
+
+def crossover(p1, p2):
+
+    p1_w = drop_init_positions(p1, init_positions)
+    p2_w = drop_init_positions(p2, init_positions)
+
+    offspring1, offspring2 = single_point_co(p1_w, p2_w)
+
+    offspring1 = include_init_positions(offspring1, init_positions)
+    offspring2 = include_init_positions(offspring2, init_positions)
+
+    return offspring1, offspring2
 
 
 # Monkey Patching
@@ -96,23 +84,22 @@ Individual.create_representation = create_representation
 if __name__ == '__main__':
 
     pop = Population(
-        size=300, optim="min", sol_size=None, valid_set=None, replacement=None)
+        size=100, optim="min", sol_size=None, valid_set=None, replacement=None)
 
-
-    #mutation_wrapper(pop.individuals[0], swap_mutation, init_positions)
 
     pop.evolve(
         gens=100,
         select=tournament,
-        crossover=single_point_co,
-        mutate=bla(swap_mutation),
+        crossover=crossover, # define operator in function above
+        mutate=mutate, # define operator in function above
         co_p=0.7,
         mu_p=0.2,
         elitism=True
     )
 
     # sol_board = Sudoku()
-    board = min(pop.individuals, key=attrgetter("fitness")).representation
+    best = min(pop.individuals, key=attrgetter("fitness"))
     # sol_board.board = board
     # sol_board.pretty_print_solution()
-    print(board)
+    print(f'Puzzle: \n{puzzle_ref}')
+    print(f'Best solution (Fitness = {best.fitness}): \n{best.representation}')
