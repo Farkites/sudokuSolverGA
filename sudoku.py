@@ -33,9 +33,9 @@ def evaluate(self):
         n_error += count_duplicates([repres[b] for b in box])
 
     # penalize deviation from initial puzzle
-    if False:
+    if True:
         for pos, v in enumerate(puzzle_ref):
-            if repres[pos] != v:
+            if repres[pos] != v and v != 0:
                 n_error += 9
 
     return n_error
@@ -78,7 +78,7 @@ def crossover(p1, p2):
 
 # Monkey Patching
 Individual.evaluate = evaluate
-Individual.get_neighbours = get_neighbours
+Individual.get_neighbours = None
 Individual.create_representation = create_representation
 
 if __name__ == '__main__':
