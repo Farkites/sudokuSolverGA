@@ -10,21 +10,25 @@ from operator import attrgetter
 from charles.sudoku_utils import get_indices, count_duplicates, find_init_positions, drop_init_positions, \
     include_init_positions, flatten_board
 from random import choice
+from time import time
+import numpy as np
+import pandas as pd
+from definitions import *
 
 
 config = {
-    'epochs': 4,
-    'pop_size': 100,
+    'difficulty': 3,  # [3,2,1]
+    'epochs': 2,
+    'pop_size': 20,
+    'gens': 10,
     'optim': 'min',
-    'difficulty': 3, # [3,2,1]
     'representation': 'maintain_init_puzzle', # [with_replacement, without_replacement, maintain_init_puzzle]
-    'gens': 100,
-    'co_p': .5,
-    'mu_p': .1,
-    'elitism': True,
     'selection': 'tournament', # [tournament, fps]
     'mutation': 'swap_mutation', # [swap_mutation, inversion_mutation]
-    'crossover': 'single_point_co' # [single_point_co, cycle_co, arithmetic_co]
+    'crossover': 'single_point_co', # [single_point_co, cycle_co, arithmetic_co]
+    'co_p': .5,
+    'mu_p': .1,
+    'elitism': True
 }
 
 
@@ -152,6 +156,8 @@ Individual.evaluate = evaluate
 Individual.get_neighbours = None
 
 if __name__ == '__main__':
+    start = time()
+    best_fitness = []
 
     for _ in range(config['epochs']):
         pop = Population(
@@ -181,4 +187,42 @@ if __name__ == '__main__':
         puzzle.add_solution(best.representation)
         puzzle.pretty_print_solution()
         print('ok')
+        best_fitness.append(best.fitness)
+
+    end = time()
+    train_duration = np.round(end - start, 2)
+    np.mean(best_fitness)
+    np.std(best_fitness)
+
+    # save results to csv
+    if os.path.isfile(OVERVIEW_FILE_ABS):
+        overview = pd.read_csv(OVERVIEW_FILE_ABS, sep=';')
+        if len(overview.run_id) == 0:
+            run_id = 1
+        else:
+            run_id = overview.run_id.max() + 1
+    else:
+        overview = pd.DataFrame()
+        run_id = 1
+
+    tmp_results = pd.DataFrame({
+        'run_id': [run_id],
+        'gs_id': [None],
+        'fitness_mean': np.round(np.mean(best_fitness), 2),
+        'fitness_sd': np.round(np.std(best_fitness), 2)
+    })
+
+    tmp_add = pd.DataFrame({
+        'user_id': USER,
+        'comments': [None]
+    })
+    tmp_config_df = pd.DataFrame(config, index=[0])
+    tmp_overview = pd.concat([tmp_results, tmp_config_df, tmp_add], axis=1)
+    overview = pd.concat([overview, tmp_overview], axis=0)
+    overview.reset_index(inplace=True, drop=True)
+    overview.to_csv(OVERVIEW_FILE_ABS, sep=';', index=False)
+    print('ok')
+
+
+
 
