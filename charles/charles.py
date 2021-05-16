@@ -6,10 +6,11 @@ from copy import deepcopy
 class Individual:
     def __init__(
             self,
-            representation=None,
-            size=None,
-            replacement=True,
-            valid_set=[i for i in range(13)],
+            representation=None
+            #,
+            #size=None,
+            #replacement=True,
+            #valid_set=[i for i in range(13)],
     ):
         """if representation == None:
             if replacement == True:
@@ -54,9 +55,9 @@ class Population:
         for _ in range(size):
             self.individuals.append(
                 Individual(
-                    size=kwargs["sol_size"],
-                    replacement=kwargs["replacement"],
-                    valid_set=kwargs["valid_set"],
+                    #size=kwargs["sol_size"],
+                    #replacement=kwargs["replacement"],
+                    #valid_set=kwargs["valid_set"],
                     # representation=kwargs["representation"](board)
                 )
             )
