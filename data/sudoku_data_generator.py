@@ -184,19 +184,25 @@ class Sudoku:
             nums = [[""] + [symbol[n] for n in row] for row in board]
 
         print(line0)
+        lines = []
         for r in range(1, self.side + 1):
-            print("".join(n + s for n, s in zip(nums[r - 1], line1.split("."))))
-            print([line2, line3, line4][(r % self.side == 0) + (r % self.base == 0)])
+            l1 = "".join(n + s for n, s in zip(nums[r - 1], line1.split(".")))
+            lines.append(l1)
+            print(l1)
+            l2 = [line2, line3, line4][(r % self.side == 0) + (r % self.base == 0)]
+            print(l2)
+            lines.append(l2)
+        return None
 
     def pretty_print_solution(self):
         # board[0][0] = color.BLUE + 'Hello World !' + color.BLUE
-        self._pretty_print(self.solution, mark=True)
+        return self._pretty_print(self.solution, mark=True)
 
     def pretty_print_puzzle(self):
-        self._pretty_print(self.puzzle)
+        return self._pretty_print(self.puzzle)
 
     def pretty_print_board(self):
-        self._pretty_print(self.board)
+        return self._pretty_print(self.board)
 
 
 if __name__ == '__main__':

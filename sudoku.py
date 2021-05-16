@@ -15,6 +15,8 @@ import numpy as np
 import pandas as pd
 from definitions import *
 from sklearn.model_selection import ParameterGrid
+from matplotlib import pyplot as plt
+import seaborn as sns
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
@@ -35,7 +37,7 @@ config_grid = {
     'difficulty': [3],  # [3,2,1]
     'epochs': [2],
     'pop_size': [20],
-    'gens': [10],
+    'gens': [20],
     'optim': ['min'],
     'representation': ['maintain_init_puzzle'], # [with_replacement, without_replacement, maintain_init_puzzle]
     'selection': ['tournament'], # [tournament, fps]
@@ -49,7 +51,7 @@ config_grid = {
 grid = ParameterGrid(config_grid)
 
 if __name__ == '__main__':
-
+    # load experiments overview
     if os.path.isfile(OVERVIEW_FILE_ABS):
         overview = pd.read_csv(OVERVIEW_FILE_ABS, sep=';')
         if len(overview.run_id) == 0:
@@ -60,12 +62,20 @@ if __name__ == '__main__':
         overview = pd.DataFrame()
         run_id = 0
 
+
     for gs_id, config in enumerate(grid):
         start = time()
         # init
         best_fitness = []
+        history = {}
+        run_name = f'{run_id}_{gs_id}'
 
-        for _ in range(config['epochs']):
+        # create dir for experiment details
+        details_dir = os.path.join(RESULTS_PATH_ABS, run_name)
+        if not os.path.exists(details_dir):
+            os.mkdir(details_dir)
+
+        for epoch in range(config['epochs']):
             # init
             puzzle = Sudoku()
 
@@ -110,7 +120,7 @@ if __name__ == '__main__':
                 if True:
                     for pos, v in enumerate(puzzle_ref):
                         if repres[pos] != v and v != 0:
-                            n_error += 9
+                            n_error += 1
 
                 return n_error
 
@@ -226,6 +236,9 @@ if __name__ == '__main__':
             print('ok')
             best_fitness.append(best.fitness)
 
+            #
+            history[epoch] = pop.history
+
         end = time()
         duration = np.round(end - start, 2)
 
@@ -249,6 +262,33 @@ if __name__ == '__main__':
         overview = pd.concat([overview, tmp_overview], axis=0)
         overview.reset_index(inplace=True, drop=True)
         overview.to_csv(OVERVIEW_FILE_ABS, sep=';', index=False)
+
+        # plot history
+        fig, ax = plt.subplots(1,1)
+        history_df = pd.DataFrame()
+        for k,v in history.items():
+
+            tmp = pd.DataFrame(v, columns=['generation','fitness'])
+            tmp['epoch'] = k
+            history_df = pd.concat([history_df, tmp], axis=0)
+
+        # compute avg
+        mean_df = history_df.groupby(['generation']).fitness.mean().reset_index(drop=False)
+        mean_df['epoch'] = 'mean'
+        history_df = pd.concat([history_df, mean_df], axis=0)
+        history_df.to_csv(os.path.join(details_dir, 'history.csv'), sep=';')
+
+        palette = {e: 'red' if e == 'mean' else 'grey' for e in history_df.epoch.unique()}
+        sns.lineplot(data=history_df,
+                     x='generation',
+                     y='fitness',
+                     hue='epoch',
+                     palette=palette,
+                     legend=False,
+                     ax=ax, )
+        fig.suptitle(f'Fitness history for run: {run_name}')
+        fig.savefig(os.path.join(details_dir, 'history.pdf'))
+
     print('ok')
 
 
