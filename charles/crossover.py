@@ -1,5 +1,6 @@
 from random import randint, uniform
-
+from data.sudoku_data_generator import to_array, to_matrix
+from copy import deepcopy
 
 def template_co(p1, p2):
     """[summary]
@@ -30,7 +31,7 @@ def single_point_co(p1, p2):
     offspring2 = p2[:co_point] + p1[co_point:]
 
     return offspring1, offspring2
-    
+
 def cycle_co(p1, p2):
     # Offspring placeholders - None values make it easy to debug for errors
     offspring1 = [None] * len(p1)
@@ -61,17 +62,31 @@ def arithmetic_co(p1, p2):
     offspring1 = [None] * len(p1)
     offspring2 = [None] * len(p1)
     # Set a value for alpha between 0 and 1
-    alpha = uniform(0,1)
+    alpha = uniform(0, 1)
     # Take weighted sum of two parents, invert alpha for second offspring
     for i in range(len(p1)):
         offspring1[i] = p1[i] * alpha + (1 - alpha) * p2[i]
         offspring2[i] = p2[i] * alpha + (1 - alpha) * p1[i]
 
     return offspring1, offspring2
-    
+
+
+def cycle_by_row_co(p1, p2):
+    p1_matrix = to_matrix(p1)
+    p2_matrix = to_matrix(p2)
+
+    offspring1_matrix = []
+    offspring2_matrix = []
+    for i in range(len(p1_matrix)):
+        o1, o2 = cycle_co(p1_matrix[i], p2_matrix[i])
+        offspring1_matrix.append(o1)
+        offspring2_matrix.append(o2)
+
+    return to_array(offspring1_matrix), to_array(offspring2_matrix)
+
 
 if __name__ == '__main__':
-    p1 = [0.1,0.2,0.6,0.4,0.3,0.5,0.7]
-    p2 = [0.7,0.5,0.2,0.3,0.6,0.4,0.1]
+    p1 = [1, 2, 3, 4,5,6,7,8,9]
+    p2 = [1, 2, 5, 4,3,4,6,7,8]
 
-    print(arithmetic_co(p1, p2))
+    print(cycle_co(p1, p2))

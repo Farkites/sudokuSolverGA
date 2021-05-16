@@ -1,4 +1,6 @@
 from random import randint, sample
+from data.sudoku_data_generator import to_array, to_matrix
+
 
 def template_mutation(individual):
     """[summary]
@@ -47,6 +49,16 @@ def swap_mutation(individual):
     i[mut_points[0]], i[mut_points[1]] = i[mut_points[1]], i[mut_points[0]]
 
     return i
+
+
+def swap_by_row_mutation(individual):
+    i_matrix = to_matrix(individual)
+
+    for i in range(len(i_matrix)):
+        i_matrix[i] = swap_mutation(i_matrix[i])
+
+    return i_matrix
+
 
 def inversion_mutation(individual):
     i = individual
