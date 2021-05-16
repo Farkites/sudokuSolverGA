@@ -2,7 +2,8 @@ from random import sample, choice
 from itertools import islice
 from copy import deepcopy
 
-from charles.sudoku_utils import get_row_indices, find_init_positions
+from charles.sudoku_utils import get_row_indices, find_init_positions, build_board_from_vector
+
 from charles.utils import color
 
 
@@ -17,6 +18,7 @@ class Sudoku:
         self.difficulty = None #difficulty
         # self.clearance_rate = self.encode_difficulty()
         self.board = None #self.build_board()
+        self.board_flat = None
         self.puzzle = None #self.build_puzzle()
         self.puzzle_flat =  None # [n for row in self.puzzle for n in row]
         self.solution_flat = None
@@ -54,17 +56,6 @@ class Sudoku:
         # produce board using randomized baseline pattern
         board = [[nums[pattern(r, c)] for c in cols] for r in rows]
         self.board = board
-
-    def build_board_from_vector(self, flattboard):
-        if len(flattboard) != self.base**4:
-            raise ValueError('')
-
-        if not isinstance(flattboard, list):
-            raise ValueError('flattboard needs to be of type list')
-
-        idx = get_row_indices(self.base)
-        return [[flattboard[i] for i in row] for row in idx]
-
 
     def _clear_board(self, difficulty):
         board = deepcopy(self.board)
@@ -128,7 +119,7 @@ class Sudoku:
         """
         if self.board is None:
             print('No board instantiazied. Creating random board...')
-            self.build_board_random()
+            self.build_board_random
 
         solution = self.board
         # init puzzlewith 75% of the fields cleared from the solution
@@ -144,9 +135,19 @@ class Sudoku:
         self.puzzle = puzzle
         self.puzzle_flat = [n for row in puzzle for n in row]
 
+    def add_board(self, board_flat):
+        self.board_flat = board_flat
+        self.board = build_board_from_vector(board_flat, self.base)
+
     def add_solution(self, solution_flat):
         self.solution_flat = solution_flat
-        self.solution = self.build_board_from_vector(solution_flat)
+        self.solution = build_board_from_vector(solution_flat, self.base)
+
+
+    def add_puzzle(self, puzzle_flat):
+        self.puzzle_flat = puzzle_flat
+        self.puzzle = build_board_from_vector(puzzle_flat, self.base)
+
 
 
     def _pretty_print(self, board, mark=False):

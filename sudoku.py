@@ -1,18 +1,21 @@
 from charles.charles import Population, Individual
 from copy import deepcopy
 from data.sudoku_data_generator import Sudoku
+from data import sudoku_data
 from charles.selection import fps, tournament
 from charles.mutation import binary_mutation, swap_mutation, inversion_mutation
 from charles.crossover import single_point_co
 from random import random, sample, randint
 from operator import attrgetter
 from charles.sudoku_utils import get_indices, count_duplicates, find_init_positions, drop_init_positions, \
-    include_init_positions
+    include_init_positions, flatten_board
 from random import choice
 
-
 puzzle = Sudoku()
-puzzle.build_puzzle(difficulty=3)
+puzzle.add_board(sudoku_data.board_diff_3)
+puzzle.add_puzzle(sudoku_data.puzzle_diff_3)
+
+#puzzle.build_puzzle(difficulty=1)
 puzzle_ref = puzzle.puzzle_flat
 side = puzzle.side
 row_idx, col_idx, box_idx = get_indices(base=puzzle.base)
@@ -55,7 +58,6 @@ def create_representation(self):
             if insert_digit not in row:
                 row[row.index(0)] = insert_digit
     return to_array(matrix)
-
 
 
 def mutate(individual):
