@@ -18,6 +18,7 @@ from definitions import *
 from sklearn.model_selection import ParameterGrid
 from matplotlib import pyplot as plt
 import seaborn as sns
+import json
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
@@ -250,6 +251,9 @@ if __name__ == '__main__':
         end = time()
         duration = np.round(end - start, 2)
 
+        # save config
+        with open(os.path.join(details_dir, 'config.json'), 'w') as f:
+            json.dump(config, f, indent=5)
         # save results to csv
         tmp_results = pd.DataFrame({
             'run_id': [run_id],
