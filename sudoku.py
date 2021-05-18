@@ -22,16 +22,16 @@ import json
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
-    'epochs': [2],
-    'pop_size': [20],
-    'gens': [10],
+    'epochs': [30],
+    'pop_size': list(np.arange(100, 1000, 250)),
+    'gens': [1000],
     'optim': ['min'],
-    'representation': ['maintain_init_puzzle'], # [with_replacement, without_replacement, maintain_init_puzzle]
+    'representation': ['with_replacement', 'without_replacement', 'maintain_init_puzzle'],
     'selection': ['tournament'], # [tournament, fps]
-    'mutation': ['swap_mutation', 'inversion_mutation'], # [swap_mutation, inversion_mutation]
-    'crossover': ['single_point_co'], # [single_point_co, cycle_co, arithmetic_co]
-    'co_p': list(np.arange(.5, 1.05, .25)),
-    'mu_p': list(np.arange(.0, 0.6, .2)),
+    'mutation': ['swap_mutation', 'inversion_mutation', 'swap_by_row_mutation'],
+    'crossover': ['single_point_co', 'cycle_co', 'arithmetic_co', 'partially_match_co', 'cycle_by_row_co', 'partially_match_by_row_co'],
+    'co_p': list(np.arange(.7, 1.05, .15)),
+    'mu_p': list(np.arange(.05, 0.35, .05)),
     'elitism': [True],
     'fitness_sharing': [False]
 }
@@ -39,7 +39,7 @@ config_grid = {
 config_grid = {
     'difficulty': [3],  # [3,2,1]
     'epochs': [2],
-    'pop_size': [30],
+    'pop_size': [300],
     'gens': [300],
     'optim': ['min'],
     'representation': ['with_replacement'], # [with_replacement, without_replacement, maintain_init_puzzle]
