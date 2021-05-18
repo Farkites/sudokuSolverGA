@@ -34,14 +34,14 @@ config_grid = {
     'mu_p': list(np.arange(.05, 0.35, .05)),
     'elitism': [True],
     'fitness_sharing': [False],
-    'early_stopping_patience': [20]
+    'early_stopping_patience': [100]
 }
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
     'epochs': [10],
     'pop_size': [300],
-    'gens': [300],
+    'gens': [1000],
     'optim': ['min'],
     'representation': ['with_replacement'], # [with_replacement, without_replacement, maintain_init_puzzle]
     'selection': ['tournament'], # [tournament, fps]
@@ -51,7 +51,7 @@ config_grid = {
     'mu_p': [.01],
     'elitism': [True],
     'fitness_sharing': [False],
-    'early_stopping_patience': [20]
+    'early_stopping_patience': [50]
 }
 
 grid = ParameterGrid(config_grid)
