@@ -5,7 +5,7 @@ from data.ks_data import weights, values, capacity
 from charles.selection import fps, tournament
 from charles.mutation import binary_mutation
 from charles.crossover import single_point_co
-from random import random
+from random import random, choice
 from operator import  attrgetter
 
 def evaluate(self):
@@ -33,20 +33,32 @@ def get_neighbours(self):
     return n
 
 
+
 # Monkey Patching
 Individual.evaluate = evaluate
 Individual.get_neighbours = get_neighbours
 
-pop = Population(
-    size=100, optim="max", sol_size=len(values), valid_set=[0, 1], replacement=True
-)
 
-pop.evolve(
-    gens=100, 
-    select= tournament,
-    crossover= single_point_co,
-    mutate=binary_mutation,
-    co_p=0.7,
-    mu_p=0.2,
-    elitism=False
-)
+def create_representation(self):
+    sol_size = len(values)
+    valid_set = [0, 1]
+    return [choice(valid_set) for i in range(sol_size)]
+
+
+Individual.create_representation = create_representation
+
+if __name__ == '__main__':
+    pop = Population(
+        size=100, optim="max"
+    )
+
+    pop.evolve(
+        gens=100,
+        select= fps,
+        crossover= single_point_co,
+        mutate=binary_mutation,
+        co_p=0.7,
+        mu_p=0.2,
+        elitism=False
+    )
+    print('ok')

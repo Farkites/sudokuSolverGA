@@ -22,19 +22,20 @@ import json
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
-    'epochs': [2],
-    'pop_size': [20],
-    'gens': [10],
+    'epochs': [30],
+    'pop_size': list(np.arange(100, 1000, 250)),
+    'gens': [1000],
     'optim': ['min'],
-    'representation': ['maintain_init_puzzle'], # [with_replacement, without_replacement, maintain_init_puzzle]
+    'representation': ['with_replacement', 'without_replacement', 'maintain_init_puzzle'],
     'selection': ['tournament'], # [tournament, fps]
-    'mutation': ['swap_mutation', 'inversion_mutation'], # [swap_mutation, inversion_mutation]
-    'crossover': ['single_point_co'], # [single_point_co, cycle_co, arithmetic_co]
-    'co_p': list(np.arange(.5, 1.05, .25)),
-    'mu_p': list(np.arange(.0, 0.6, .2)),
+    'mutation': ['swap_mutation', 'inversion_mutation', 'swap_by_row_mutation'],
+    'crossover': ['single_point_co', 'cycle_co', 'arithmetic_co', 'partially_match_co', 'cycle_by_row_co', 'partially_match_by_row_co'],
+    'co_p': list(np.arange(.7, 1.05, .15)),
+    'mu_p': list(np.arange(.05, 0.35, .05)),
     'elitism': [True],
     'fitness_sharing': [False],
-    'diversity_measure': [True]
+    'diversity_measure': [True],
+    'early_stopping_patience': [100]
 }
 
 config_grid = {
@@ -51,7 +52,8 @@ config_grid = {
     'mu_p': [.01],
     'elitism': [True],
     'fitness_sharing': [False],
-    'diversity_measure': [True]
+    'diversity_measure': [True],
+    'early_stopping_patience': [50]
 }
 
 grid = ParameterGrid(config_grid)
@@ -76,6 +78,7 @@ if __name__ == '__main__':
         history = {}
         diversity_hist = {}
         run_name = f'{run_id}_{gs_id}'
+        stopped_early = []
 
         # create dir for experiment details
         details_dir = os.path.join(RESULTS_PATH_ABS, run_name)
@@ -232,7 +235,9 @@ if __name__ == '__main__':
                 mu_p=config['mu_p'],
                 elitism=config['elitism'],
                 fitness_sharing=config['fitness_sharing'],
-                diversity_measure=config['diversity_measure']
+                diversity_measure=config['diversity_measure'],
+                early_stopping_patience=config['early_stopping_patience']
+
             )
 
             # sol_board = Sudoku()
@@ -252,6 +257,7 @@ if __name__ == '__main__':
             #
             history[epoch] = pop.history
             diversity_hist[epoch] = pop.diversity_hist
+            stopped_early.append(pop.stopped_early)
 
         end = time()
         duration = np.round(end - start, 2)
@@ -265,7 +271,8 @@ if __name__ == '__main__':
             'gs_id': [int(gs_id)],
             'duration': duration,
             'fitness_mean': np.round(np.mean(best_fitness), 2),
-            'fitness_sd': np.round(np.std(best_fitness), 2)
+            'fitness_sd': np.round(np.std(best_fitness), 2),
+            'stopped_early': sum(stopped_early)
         })
 
         tmp_add = pd.DataFrame({
