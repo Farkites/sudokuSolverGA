@@ -27,7 +27,7 @@ config_grid = {
     'gens': [1000],
     'optim': ['min'],
     'representation': ['with_replacement', 'without_replacement', 'maintain_init_puzzle'],
-    'selection': ['tournament'], # [tournament, fps]
+    'selection': ['tournament', 'fps'], # [tournament, fps]
     'mutation': ['swap_mutation', 'inversion_mutation', 'swap_by_row_mutation'],
     'crossover': ['single_point_co', 'cycle_co', 'arithmetic_co', 'partially_match_co', 'cycle_by_row_co', 'partially_match_by_row_co'],
     'co_p': list(np.arange(.7, 1.05, .15)),
@@ -40,21 +40,39 @@ config_grid = {
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
+    'epochs': [30],
+    'pop_size': list(np.arange(100, 1000, 250)),
+    'gens': [1000],
+    'optim': ['min'],
+    'representation': ['with_replacement', 'without_replacement', 'maintain_init_puzzle'],
+    'selection': ['tournament', 'fps'], # [tournament, fps]
+    'mutation': ['swap_mutation', 'inversion_mutation', 'swap_by_row_mutation'],
+    'crossover': ['single_point_co', 'arithmetic_co', 'partially_match_co', 'partially_match_by_row_co'],
+    'co_p': list(np.arange(.7, 1.05, .15)),
+    'mu_p': list(np.arange(.05, 0.35, .05)),
+    'elitism': [True],
+    'fitness_sharing': [False],
+    'diversity_measure': [True],
+    'early_stopping_patience': [100]
+}
+
+"""config_grid = {
+    'difficulty': [3],  # [3,2,1]
     'epochs': [2],
     'pop_size': [30],
     'gens': [30],
     'optim': ['min'],
     'representation': ['with_replacement'], # [with_replacement, without_replacement, maintain_init_puzzle]
-    'selection': ['tournament'], # [tournament, fps]
+    'selection': ['fps'], # [tournament, fps]
     'mutation': ['swap_mutation'], # [swap_mutation, inversion_mutation, swap_by_row_mutation]
-    'crossover': ['single_point_co'], # [single_point_co, cycle_co, arithmetic_co, partially_match_co, cycle_by_row_co, partially_match_by_row_co]
+    'crossover': ['cycle_co'], # [single_point_co, cycle_co, arithmetic_co, partially_match_co, cycle_by_row_co, partially_match_by_row_co]
     'co_p': [.9],
     'mu_p': [.01],
     'elitism': [True],
     'fitness_sharing': [False],
     'diversity_measure': [True],
     'early_stopping_patience': [50]
-}
+}"""
 
 grid = ParameterGrid(config_grid)
 
@@ -72,6 +90,7 @@ if __name__ == '__main__':
 
 
     for gs_id, config in enumerate(grid):
+        print(config)
         start = time()
         # init
         best_fitness = []
@@ -310,6 +329,7 @@ if __name__ == '__main__':
                      ax=ax)
         fig.suptitle(f'Fitness history for run: {run_name}')
         fig.savefig(os.path.join(details_dir, 'history.pdf'))
+        plt.close()
 
         if config['diversity_measure']:
             # plot diversity history
@@ -336,6 +356,8 @@ if __name__ == '__main__':
                          ax=ax)
             fig.suptitle(f'Diversity measure history for run: {run_name}')
             fig.savefig(os.path.join(details_dir, 'diversity_hist.pdf'))
+            plt.close()
+
     print('ok')
 
 
