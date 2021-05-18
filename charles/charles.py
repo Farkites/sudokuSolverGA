@@ -68,7 +68,7 @@ class Population:
                 )
             )
 
-    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, fitness_sharing, early_stopping_patience=None):
+    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, fitness_sharing=False, early_stopping_patience=None):
         history = []
         # used for early stopping
         n_gens_not_improved = 0
