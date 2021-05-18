@@ -33,14 +33,15 @@ config_grid = {
     'co_p': list(np.arange(.5, 1.05, .25)),
     'mu_p': list(np.arange(.0, 0.6, .2)),
     'elitism': [True],
-    'fitness_sharing': [False]
+    'fitness_sharing': [False],
+    'diversity_measure': [True]
 }
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
     'epochs': [2],
     'pop_size': [30],
-    'gens': [300],
+    'gens': [30],
     'optim': ['min'],
     'representation': ['with_replacement'], # [with_replacement, without_replacement, maintain_init_puzzle]
     'selection': ['tournament'], # [tournament, fps]
@@ -49,7 +50,8 @@ config_grid = {
     'co_p': [.9],
     'mu_p': [.01],
     'elitism': [True],
-    'fitness_sharing': [False]
+    'fitness_sharing': [False],
+    'diversity_measure': [True]
 }
 
 grid = ParameterGrid(config_grid)
@@ -72,6 +74,7 @@ if __name__ == '__main__':
         # init
         best_fitness = []
         history = {}
+        diversity_hist = {}
         run_name = f'{run_id}_{gs_id}'
 
         # create dir for experiment details
@@ -228,7 +231,8 @@ if __name__ == '__main__':
                 co_p=config['co_p'],
                 mu_p=config['mu_p'],
                 elitism=config['elitism'],
-                fitness_sharing=config['fitness_sharing']
+                fitness_sharing=config['fitness_sharing'],
+                diversity_measure=config['diversity_measure']
             )
 
             # sol_board = Sudoku()
@@ -247,6 +251,7 @@ if __name__ == '__main__':
 
             #
             history[epoch] = pop.history
+            diversity_hist[epoch] = pop.diversity_hist
 
         end = time()
         duration = np.round(end - start, 2)
@@ -299,6 +304,31 @@ if __name__ == '__main__':
         fig.suptitle(f'Fitness history for run: {run_name}')
         fig.savefig(os.path.join(details_dir, 'history.pdf'))
 
+        if config['diversity_measure']:
+            # plot diversity history
+            fig, ax = plt.subplots(1, 1)
+            diversity_hist_df = pd.DataFrame()
+            for k, v in diversity_hist.items():
+                tmp = pd.DataFrame(v, columns=['generation', 'entropy'])
+                tmp['epoch'] = k
+                diversity_hist_df = pd.concat([diversity_hist_df, tmp], axis=0)
+
+            # compute avg
+            mean_df = diversity_hist_df.groupby(['generation']).entropy.mean().reset_index(drop=False)
+            mean_df['epoch'] = 'mean'
+            diversity_hist_df = pd.concat([diversity_hist_df, mean_df], axis=0)
+            diversity_hist_df.to_csv(os.path.join(details_dir, 'diversity_hist.csv'), sep=';')
+
+            palette = {e: 'red' if e == 'mean' else 'grey' for e in diversity_hist_df.epoch.unique()}
+            sns.lineplot(data=diversity_hist_df,
+                         x='generation',
+                         y='entropy',
+                         hue='epoch',
+                         palette=palette,
+                         legend=False,
+                         ax=ax)
+            fig.suptitle(f'Diversity measure history for run: {run_name}')
+            fig.savefig(os.path.join(details_dir, 'diversity_hist.pdf'))
     print('ok')
 
 

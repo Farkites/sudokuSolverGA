@@ -56,7 +56,7 @@ class Population:
         self.size = size
         self.optim = optim
         self.history = None
-        self.diversity = None
+        self.diversity_hist = None
         for _ in range(size):
             self.individuals.append(
                 Individual(
@@ -67,9 +67,9 @@ class Population:
                 )
             )
 
-    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, fitness_sharing):
+    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, fitness_sharing, diversity_measure):
         history = []
-
+        diversity_hist = []
         for gen in range(gens):
             new_pop = []
 
@@ -111,13 +111,17 @@ class Population:
                 best = max(self, key=attrgetter("fitness"))
                 history.append((gen, best.fitness))
                 print(f'Best Individual: {best}')
+                if diversity_measure:
+                    diversity_hist.append((gen,self.get_entropy()))
             elif self.optim == "min":
                 best = min(self, key=attrgetter("fitness"))
                 history.append((gen, best.fitness))
                 print(f'Best Individual: {best}')
-            self.diversity = self.get_entropy()
-            print(self.diversity)
+                if diversity_measure:
+                    diversity_hist.append((gen,self.get_entropy()))
+
         self.history = history
+        self.diversity_hist = diversity_hist
 
     def get_entropy(self, entropy_type='genotypic_v1'):
 
