@@ -276,7 +276,7 @@ if __name__ == '__main__':
                      hue='epoch',
                      palette=palette,
                      legend=False,
-                     ax=ax, )
+                     ax=ax)
         fig.suptitle(f'Fitness history for run: {run_name}')
         fig.savefig(os.path.join(details_dir, 'history.pdf'))
 
