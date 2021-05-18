@@ -26,14 +26,14 @@ config_grid = {
     'pop_size': [30],
     'gens': [300],
     'optim': ['min'],
-    'representation': ['maintain_init_puzzle'], # [with_replacement, without_replacement, maintain_init_puzzle]
+    'representation': ['with_replacement'], # [with_replacement, without_replacement, maintain_init_puzzle]
     'selection': ['tournament'], # [tournament, fps]
-    'mutation': ['swap_by_row_mutation'], # [swap_mutation, inversion_mutation, swap_by_row_mutation]
-    'crossover': ['partially_match_by_row_co'], # [single_point_co, cycle_co, arithmetic_co, partially_match_co, cycle_by_row_co, partially_match_by_row_co]
+    'mutation': ['swap_mutation'], # [swap_mutation, inversion_mutation, swap_by_row_mutation]
+    'crossover': ['single_point_co'], # [single_point_co, cycle_co, arithmetic_co, partially_match_co, cycle_by_row_co, partially_match_by_row_co]
     'co_p': [.9],
     'mu_p': [.01],
     'elitism': [True],
-    'fitness_sharing': [True]
+    'fitness_sharing': [False]
 }
 
 grid = ParameterGrid(config_grid)
@@ -156,31 +156,22 @@ if __name__ == '__main__':
                 selection = tournament"""
 
             # mutation
-            if config['mutation'] in ['swap_mutation', 'inversion_mutation']:
+            if (config['mutation'] in ['swap_mutation', 'inversion_mutation'])\
+                    & (config['representation'] == 'maintain_init_puzzle'):
                 mut = globals()[config['mutation']]
-
 
                 def mutate(individual):
                     indv_without_init = drop_init_positions(individual, init_positions)
                     i = mut(indv_without_init)
                     return include_init_positions(i, init_positions)
 
-
                 mutation = mutate
-            elif config['mutation'] in ['swap_by_row_mutation']:
-                mut = globals()[config['mutation']]
+            else:
+                mutation = globals()[config['mutation']]
 
-
-                def mutate(individual):
-
-                    i = mut(individual)
-                    return i
-
-                mutation = mutate
-
-            if config['crossover'] in ['single_point_co', 'cycle_co', 'arithmetic_co', 'partially_match_co']:
+            if (config['crossover'] in ['single_point_co', 'cycle_co', 'arithmetic_co', 'partially_match_co']) \
+                    & (config['representation'] == 'maintain_init_puzzle'):
                 co = globals()[config['crossover']]
-
 
                 def crossover(p1, p2):
 
@@ -194,11 +185,9 @@ if __name__ == '__main__':
 
                     return offspring1, offspring2
 
-
                 crossover_fct = crossover
-            elif config['crossover'] in ['cycle_by_row_co', 'partially_match_by_row_co']:
+            else:
                 co = globals()[config['crossover']]
-
 
                 def crossover_by_row(p1, p2):
                     offspring1, offspring2 = co(p1.representation, p2.representation)
@@ -247,8 +236,6 @@ if __name__ == '__main__':
         duration = np.round(end - start, 2)
 
         # save results to csv
-
-
         tmp_results = pd.DataFrame({
             'run_id': [run_id],
             'gs_id': [int(gs_id)],
