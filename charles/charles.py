@@ -57,6 +57,7 @@ class Population:
         self.optim = optim
         self.history = None
         self.diversity = None
+        self.stopped_early = False
         for _ in range(size):
             self.individuals.append(
                 Individual(
@@ -67,12 +68,17 @@ class Population:
                 )
             )
 
-    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, fitness_sharing):
+    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, fitness_sharing, early_stopping_patience=None):
         history = []
+        # used for early stopping
+        n_gens_not_improved = 0
+        if self.optim == "max":
+            best_before = -np.inf
+        elif self.optim == "min":
+            best_before = +np.inf
 
         for gen in range(gens):
             new_pop = []
-
             if elitism == True:
                 if self.optim == "max":
                     elite = deepcopy(max(self.individuals, key=attrgetter("fitness")))
@@ -111,12 +117,32 @@ class Population:
                 best = max(self, key=attrgetter("fitness"))
                 history.append((gen, best.fitness))
                 print(f'Best Individual: {best}')
+                # early stopping
+                best_fitness = best.fitness
+                if best_fitness <= best_before:
+                    n_gens_not_improved +=1
+                else:
+                    n_gens_not_improved = 0
+                best_before = best_fitness
+
             elif self.optim == "min":
                 best = min(self, key=attrgetter("fitness"))
                 history.append((gen, best.fitness))
                 print(f'Best Individual: {best}')
+                # early stopping
+                best_fitness = best.fitness
+                if best_fitness >= best_before:
+                    n_gens_not_improved +=1
+                else:
+                    n_gens_not_improved = 0
+                best_before = best_fitness
             self.diversity = self.get_entropy()
             print(self.diversity)
+            # apply early stopping
+            if early_stopping_patience is not None:
+                if n_gens_not_improved >= early_stopping_patience:
+                    self.stopped_early = True
+                    break
         self.history = history
 
     def get_entropy(self, entropy_type='genotypic_v1'):

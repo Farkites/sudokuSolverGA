@@ -33,12 +33,13 @@ config_grid = {
     'co_p': list(np.arange(.7, 1.05, .15)),
     'mu_p': list(np.arange(.05, 0.35, .05)),
     'elitism': [True],
-    'fitness_sharing': [False]
+    'fitness_sharing': [False],
+    'early_stopping_patience': [20]
 }
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
-    'epochs': [2],
+    'epochs': [10],
     'pop_size': [300],
     'gens': [300],
     'optim': ['min'],
@@ -49,7 +50,8 @@ config_grid = {
     'co_p': [.9],
     'mu_p': [.01],
     'elitism': [True],
-    'fitness_sharing': [False]
+    'fitness_sharing': [False],
+    'early_stopping_patience': [20]
 }
 
 grid = ParameterGrid(config_grid)
@@ -73,6 +75,7 @@ if __name__ == '__main__':
         best_fitness = []
         history = {}
         run_name = f'{run_id}_{gs_id}'
+        stopped_early = []
 
         # create dir for experiment details
         details_dir = os.path.join(RESULTS_PATH_ABS, run_name)
@@ -228,7 +231,8 @@ if __name__ == '__main__':
                 co_p=config['co_p'],
                 mu_p=config['mu_p'],
                 elitism=config['elitism'],
-                fitness_sharing=config['fitness_sharing']
+                fitness_sharing=config['fitness_sharing'],
+                early_stopping_patience=config['early_stopping_patience']
             )
 
             # sol_board = Sudoku()
@@ -247,6 +251,7 @@ if __name__ == '__main__':
 
             #
             history[epoch] = pop.history
+            stopped_early.append(pop.stopped_early)
 
         end = time()
         duration = np.round(end - start, 2)
@@ -260,7 +265,8 @@ if __name__ == '__main__':
             'gs_id': [int(gs_id)],
             'duration': duration,
             'fitness_mean': np.round(np.mean(best_fitness), 2),
-            'fitness_sd': np.round(np.std(best_fitness), 2)
+            'fitness_sd': np.round(np.std(best_fitness), 2),
+            'stopped_early': sum(stopped_early)
         })
 
         tmp_add = pd.DataFrame({
