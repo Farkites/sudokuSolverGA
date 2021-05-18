@@ -32,6 +32,7 @@ def single_point_co(p1, p2):
 
     return offspring1, offspring2
 
+
 def cycle_co(p1, p2):
     # Offspring placeholders - None values make it easy to debug for errors
     offspring1 = [None] * len(p1)
@@ -57,6 +58,7 @@ def cycle_co(p1, p2):
 
     return offspring1, offspring2
 
+
 def arithmetic_co(p1, p2):
     # Offspring placeholders - None values make it easy to debug for errors
     offspring1 = [None] * len(p1)
@@ -69,6 +71,47 @@ def arithmetic_co(p1, p2):
         offspring2[i] = p2[i] * alpha + (1 - alpha) * p1[i]
 
     return offspring1, offspring2
+
+
+def partially_match_co(p1, p2):
+    offspring1 = [None] * len(p1)
+    offspring2 = [None] * len(p2)
+
+    segment_len = 3
+    co_point_1 = randint(0, len(p1)-segment_len)
+    co_point_2 = co_point_1 + 3
+
+    characters_in_segment = []
+    for i in range(co_point_1, co_point_2):
+        characters_in_segment.append(p1[i])
+        characters_in_segment.append(p2[i])
+
+    for i in range(len(offspring1)):
+        if p1[i] in characters_in_segment:
+            offspring1[i] = p2[i]
+        else:
+            offspring1[i] = p1[i]
+
+        if p2[i] in characters_in_segment:
+            offspring2[i] = p1[i]
+        else:
+            offspring2[i] = p2[i]
+
+    return offspring1, offspring2
+
+
+def partially_match_by_row_co(p1, p2):
+    p1_matrix = build_board_from_vector(p1)
+    p2_matrix = build_board_from_vector(p2)
+
+    offspring1_matrix = []
+    offspring2_matrix = []
+    for i in range(len(p1_matrix)):
+        o1, o2 = partially_match_co(p1_matrix[i], p2_matrix[i])
+        offspring1_matrix.append(o1)
+        offspring2_matrix.append(o2)
+
+    return flatten_board(offspring1_matrix), flatten_board(offspring2_matrix)
 
 
 def cycle_by_row_co(p1, p2):
@@ -86,7 +129,7 @@ def cycle_by_row_co(p1, p2):
 
 
 if __name__ == '__main__':
-    p1 = [1, 2, 3, 4,5,6,7,8,9]
-    p2 = [1, 2, 5, 4,3,4,6,7,8]
+    p1 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    p2 = [1, 2, 5, 4, 3, 4, 6, 7, 8]
 
-    print(cycle_co(p1, p2))
+    print(partially_match_co(p1, p2))

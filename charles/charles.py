@@ -1,6 +1,9 @@
 from random import shuffle, choice, sample, random
 from operator import attrgetter
 from copy import deepcopy
+from scipy.spatial import distance
+import numpy as np
+from sklearn.preprocessing import normalize
 
 
 class Individual:
@@ -53,6 +56,7 @@ class Population:
         self.size = size
         self.optim = optim
         self.history = None
+        self.diversity = None
         for _ in range(size):
             self.individuals.append(
                 Individual(
@@ -63,7 +67,7 @@ class Population:
                 )
             )
 
-    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism):
+    def evolve(self, gens, select, crossover, mutate, co_p, mu_p, elitism, fitness_sharing):
         history = []
 
         for gen in range(gens):
@@ -74,7 +78,8 @@ class Population:
                     elite = deepcopy(max(self.individuals, key=attrgetter("fitness")))
                 elif self.optim == "min":
                     elite = deepcopy(min(self.individuals, key=attrgetter("fitness")))
-
+            if fitness_sharing == True:
+                self.apply_fitness_sharing()
             while len(new_pop) < self.size:
                 parent1, parent2 = select(self), select(self)
                 # Crossover
@@ -110,8 +115,52 @@ class Population:
                 best = min(self, key=attrgetter("fitness"))
                 history.append((gen, best.fitness))
                 print(f'Best Individual: {best}')
-
+            self.diversity = self.get_entropy()
+            print(self.diversity)
         self.history = history
+
+    def get_entropy(self, entropy_type='genotypic_v1'):
+
+        distinct_individuals = {}
+        for individual in self.individuals:
+            if entropy_type == 'genotypic_v1':
+                if str(individual.representation) in distinct_individuals.keys():
+                    distinct_individuals[str(individual.representation)] += 1
+                else:
+                    distinct_individuals[str(individual.representation)] = 1
+
+        entropy = 0
+        for f in distinct_individuals.values():
+            entropy += f * np.log10(f)
+        return entropy
+
+    def apply_fitness_sharing(self):
+        distance_matrix = self.get_pairwise_distance()
+        sharing_coefficients = []
+        for row_idx, row in enumerate(distance_matrix):
+            coefficient = 0
+            for idx, distance in enumerate(row):
+                if row_idx != idx:
+                    coefficient += 1 - distance
+            sharing_coefficients.append(coefficient)
+        if self.optim == "max":
+            for i, individual in enumerate(self.individuals):
+                individual.fitness *= sharing_coefficients[i]
+        elif self.optim == "min":
+            for i, individual in enumerate(self.individuals):
+                individual.fitness /= sharing_coefficients[i]
+        return
+
+    def get_pairwise_distance(self):
+        distance_matrix = []
+        for individual_1 in self.individuals:
+            distance_row = []
+            for individual_2 in self.individuals:
+                    distance_row.append(distance.euclidean(individual_2.representation, individual_1.representation))
+            distance_matrix.append(distance_row)
+
+        normed_matrix = normalize(distance_matrix, axis=1, norm='l1')
+        return normed_matrix
 
     def __len__(self):
         return len(self.individuals)

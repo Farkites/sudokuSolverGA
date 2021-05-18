@@ -1,6 +1,7 @@
 import numpy as np
 from copy import deepcopy
 from charles.utils import color
+from charles.charles import Individual
 
 
 def get_box_indices(base=3):
@@ -142,9 +143,12 @@ def pretty_print(board, base=3, puzzle=None, solution=None, mark=False):
         print([line2, line3, line4][(r % side == 0) + (r % base == 0)])
 
 
-def build_board_from_vector(flattboard, base):
+def build_board_from_vector(flattboard, base=3):
     if len(flattboard) != base**4:
         raise ValueError('')
+
+    if isinstance(flattboard, Individual):
+        flattboard = flattboard.representation
 
     if not isinstance(flattboard, list):
         raise ValueError('flattboard needs to be of type list')

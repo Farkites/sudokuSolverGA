@@ -3,8 +3,9 @@ from copy import deepcopy
 from data.sudoku_data_generator import Sudoku
 from data import sudoku_data
 from charles.selection import fps, tournament
-from charles.mutation import swap_mutation, inversion_mutation
-from charles.crossover import single_point_co, cycle_co, arithmetic_co
+from charles.mutation import swap_mutation, inversion_mutation, swap_by_row_mutation
+from charles.crossover import single_point_co, cycle_co, arithmetic_co, cycle_by_row_co,\
+    partially_match_co, partially_match_by_row_co
 from random import random, sample, randint
 from operator import attrgetter
 from charles.sudoku_utils import get_indices, count_duplicates, find_init_positions, drop_init_positions, \
@@ -18,34 +19,21 @@ from sklearn.model_selection import ParameterGrid
 from matplotlib import pyplot as plt
 import seaborn as sns
 
-config_grid = {
-    'difficulty': [3],  # [3,2,1]
-    'epochs': [2],
-    'pop_size': [20],
-    'gens': [10],
-    'optim': ['min'],
-    'representation': ['maintain_init_puzzle'], # [with_replacement, without_replacement, maintain_init_puzzle]
-    'selection': ['tournament'], # [tournament, fps]
-    'mutation': ['swap_mutation', 'inversion_mutation'], # [swap_mutation, inversion_mutation]
-    'crossover': ['single_point_co'], # [single_point_co, cycle_co, arithmetic_co]
-    'co_p': list(np.arange(.5, 1.05, .25)),
-    'mu_p': list(np.arange(.0, 0.6, .2)),
-    'elitism': [True]
-}
 
 config_grid = {
     'difficulty': [3],  # [3,2,1]
     'epochs': [2],
-    'pop_size': [20],
-    'gens': [20],
+    'pop_size': [30],
+    'gens': [300],
     'optim': ['min'],
     'representation': ['maintain_init_puzzle'], # [with_replacement, without_replacement, maintain_init_puzzle]
     'selection': ['tournament'], # [tournament, fps]
-    'mutation': ['swap_mutation'], # [swap_mutation, inversion_mutation]
-    'crossover': ['single_point_co'], # [single_point_co, cycle_co, arithmetic_co]
-    'co_p': [.7],
-    'mu_p': [.2],
-    'elitism': [True]
+    'mutation': ['swap_by_row_mutation'], # [swap_mutation, inversion_mutation, swap_by_row_mutation]
+    'crossover': ['partially_match_by_row_co'], # [single_point_co, cycle_co, arithmetic_co, partially_match_co, cycle_by_row_co, partially_match_by_row_co]
+    'co_p': [.9],
+    'mu_p': [.01],
+    'elitism': [True],
+    'fitness_sharing': [True]
 }
 
 grid = ParameterGrid(config_grid)
@@ -179,10 +167,18 @@ if __name__ == '__main__':
 
 
                 mutation = mutate
-            elif config['mutation'] in []:
-                mutation = globals()[config['mutation']]
+            elif config['mutation'] in ['swap_by_row_mutation']:
+                mut = globals()[config['mutation']]
 
-            if config['crossover'] in ['single_point_co', 'cycle_co', 'arithmetic_co']:
+
+                def mutate(individual):
+
+                    i = mut(individual)
+                    return i
+
+                mutation = mutate
+
+            if config['crossover'] in ['single_point_co', 'cycle_co', 'arithmetic_co', 'partially_match_co']:
                 co = globals()[config['crossover']]
 
 
@@ -200,8 +196,15 @@ if __name__ == '__main__':
 
 
                 crossover_fct = crossover
-            elif config['crossover'] in []:
-                crossover_fct = globals()[config['crossover']]
+            elif config['crossover'] in ['cycle_by_row_co', 'partially_match_by_row_co']:
+                co = globals()[config['crossover']]
+
+
+                def crossover_by_row(p1, p2):
+                    offspring1, offspring2 = co(p1.representation, p2.representation)
+                    return offspring1, offspring2
+
+                crossover_fct = crossover_by_row
 
             # Monkey Patching
             Individual.evaluate = evaluate
@@ -219,7 +222,8 @@ if __name__ == '__main__':
                 mutate=mutation, # define operator in function above
                 co_p=config['co_p'],
                 mu_p=config['mu_p'],
-                elitism=config['elitism']
+                elitism=config['elitism'],
+                fitness_sharing=config['fitness_sharing']
             )
 
             # sol_board = Sudoku()
@@ -290,7 +294,6 @@ if __name__ == '__main__':
         fig.savefig(os.path.join(details_dir, 'history.pdf'))
 
     print('ok')
-
 
 
 
