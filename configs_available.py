@@ -24,7 +24,7 @@ config_grid_2nd_run = {
     'pop_size': [50],
     'gens': [1000],
     'optim': ['min'],
-    'representation': ['with_replacement', 'without_replacement', 'maintain_init_puzzle'],
+    'representation': ['random_mix', 'with_replacement', 'without_replacement', 'maintain_init_puzzle'],
     'selection': ['tournament'],# 'fps'], # [tournament, fps]
     'mutation': ['swap_mutation', 'inversion_mutation'],
     'crossover': ['single_point_co'],
@@ -42,7 +42,7 @@ config_grid_2nd_run_test = {
     'pop_size': [30],
     'gens': [100],
     'optim': ['min'],
-    'representation': ['with_replacement', 'without_replacement', 'maintain_init_puzzle'],
+    'representation': ['random_mix', 'with_replacement', 'without_replacement', 'maintain_init_puzzle'],
     'selection': ['tournament'],# 'fps'], # [tournament, fps]
     'mutation': ['swap_mutation', 'inversion_mutation'],
     'crossover': ['single_point_co'],
