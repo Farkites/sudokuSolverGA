@@ -20,59 +20,8 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 import json
 
-config_grid = {
-    'difficulty': [3],  # [3,2,1]
-    'epochs': [30],
-    'pop_size': np.arange(100, 1000, 250).tolist(),
-    'gens': [1000],
-    'optim': ['min'],
-    'representation': ['with_replacement', 'without_replacement', 'maintain_init_puzzle'],
-    'selection': ['tournament', 'fps'], # [tournament, fps]
-    'mutation': ['swap_mutation', 'inversion_mutation', 'swap_by_row_mutation'],
-    'crossover': ['single_point_co', 'cycle_co', 'arithmetic_co', 'partially_match_co', 'cycle_by_row_co', 'partially_match_by_row_co'],
-    'co_p': np.arange(.7, 1.05, .15).tolist(),
-    'mu_p': np.arange(.05, 0.35, .05).tolist(),
-    'elitism': [True],
-    'fitness_sharing': [False],
-    'diversity_measure': [True],
-    'early_stopping_patience': [100]
-}
-
-config_grid = {
-    'difficulty': [3],  # [3,2,1]
-    'epochs': [30],
-    'pop_size': np.arange(100, 1000, 250).tolist(),
-    'gens': [1000],
-    'optim': ['min'],
-    'representation': ['with_replacement', 'without_replacement', 'maintain_init_puzzle'],
-    'selection': ['tournament', 'fps'], # [tournament, fps]
-    'mutation': ['swap_mutation', 'inversion_mutation', 'swap_by_row_mutation'],
-    'crossover': ['single_point_co', 'arithmetic_co', 'partially_match_co', 'partially_match_by_row_co'],
-    'co_p': np.arange(.7, 1.05, .15).tolist(),
-    'mu_p': np.arange(.05, 0.35, .05).tolist(),
-    'elitism': [True],
-    'fitness_sharing': [False],
-    'diversity_measure': [True],
-    'early_stopping_patience': [100]
-}
-
-"""config_grid = {
-    'difficulty': [3],  # [3,2,1]
-    'epochs': [2],
-    'pop_size': [30],
-    'gens': [30],
-    'optim': ['min'],
-    'representation': ['with_replacement'], # [with_replacement, without_replacement, maintain_init_puzzle]
-    'selection': ['fps'], # [tournament, fps]
-    'mutation': ['swap_mutation'], # [swap_mutation, inversion_mutation, swap_by_row_mutation]
-    'crossover': ['cycle_co'], # [single_point_co, cycle_co, arithmetic_co, partially_match_co, cycle_by_row_co, partially_match_by_row_co]
-    'co_p': [.9],
-    'mu_p': [.01],
-    'elitism': [True],
-    'fitness_sharing': [False],
-    'diversity_measure': [True],
-    'early_stopping_patience': [50]
-}"""
+from configs_available import config_grid_testing
+config_grid = config_grid_testing
 
 grid = ParameterGrid(config_grid)
 
@@ -91,6 +40,20 @@ if __name__ == '__main__':
 
     for gs_id, config in enumerate(grid):
         print(config)
+        # save config
+        with open(os.path.join(details_dir, 'config.json'), 'w') as f:
+            json.dump(config, f, indent=5)
+        # save results to csv
+        tmp_results = pd.DataFrame({
+            'run_id': [run_id],
+            'gs_id': [int(gs_id)],
+            'duration': duration,
+            'fitness_mean': np.round(np.mean(best_fitness), 2),
+            'fitness_sd': np.round(np.std(best_fitness), 2),
+            'stopped_early': sum(stopped_early)
+        })
+
+        # check config
         start = time()
         # init
         best_fitness = []
@@ -149,7 +112,7 @@ if __name__ == '__main__':
                 if True:
                     for pos, v in enumerate(puzzle_ref):
                         if repres[pos] != v and v != 0:
-                            n_error += 1
+                            n_error += 10
 
                 return n_error
 
@@ -280,19 +243,6 @@ if __name__ == '__main__':
 
         end = time()
         duration = np.round(end - start, 2)
-
-        # save config
-        with open(os.path.join(details_dir, 'config.json'), 'w') as f:
-            json.dump(config, f, indent=5)
-        # save results to csv
-        tmp_results = pd.DataFrame({
-            'run_id': [run_id],
-            'gs_id': [int(gs_id)],
-            'duration': duration,
-            'fitness_mean': np.round(np.mean(best_fitness), 2),
-            'fitness_sd': np.round(np.std(best_fitness), 2),
-            'stopped_early': sum(stopped_early)
-        })
 
         tmp_add = pd.DataFrame({
             'user_id': USER,
