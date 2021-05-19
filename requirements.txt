@@ -1,8 +1,6 @@
-jupyter
-pandas
-numpy
-keras
-tensorflow
-sklearn
-matplotlib
-seaborn
+python_version==3.8
+pandas==1.2.2
+numpy==1.19.5
+scikit-learn==0.24.1
+matplotlib==3.3.4
+seaborn==0.11.1

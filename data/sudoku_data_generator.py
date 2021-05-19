@@ -9,8 +9,8 @@ from charles.utils import color
 
 class Sudoku:
     """
+    code adapted from:
     https://stackoverflow.com/questions/45471152/how-to-create-a-sudoku-puzzle-in-python
-
     """
     def __init__(self, base=3):
         self.base = base

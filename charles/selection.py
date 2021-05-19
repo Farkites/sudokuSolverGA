@@ -27,7 +27,7 @@ def fps(population):
     elif population.optim == "min":
         # code adapted from https://rocreguant.com/roulette-wheel-selection-python/2019/
         # Computes the totality of the population fitness
-        population_fitness = sum([chromosome.fitness for chromosome in population])
+        population_fitness = sum([individual.fitness for individual in population])
 
         # Computes for each individual the probability
         individual_probabilities = [individual.fitness / population_fitness for individual in population]

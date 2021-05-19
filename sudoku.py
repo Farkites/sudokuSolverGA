@@ -18,7 +18,7 @@ from charles.mutation import swap_mutation, inversion_mutation, swap_by_row_muta
 from charles.crossover import single_point_co, cycle_co, arithmetic_co, cycle_by_row_co,\
     partially_match_co, partially_match_by_row_co
 
-from configs_available import config_grid_test_single as config_grid
+from configs_available import config_grid_2nd_run_test as config_grid
 
 grid = ParameterGrid(config_grid)
 
@@ -36,9 +36,6 @@ if __name__ == '__main__':
         # save config
         with open(os.path.join(details_dir, 'config.json'), 'w') as f:
             json.dump(config, f, indent=5)
-
-        # check config
-        # Todo: constraints when using per_row operatoers
 
         # init
         best_fitness = []
@@ -89,7 +86,7 @@ if __name__ == '__main__':
         end = time()
         duration = np.round(end - start, 2)
 
-        # append results
+        # append run results to overview
         overview = write_results_to_overview(overview, config, run_id, gs_id, duration, best_fitness, stopped_early)
         overview.to_csv(OVERVIEW_FILE_ABS, sep=';', index=False)
 
