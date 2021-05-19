@@ -3,3 +3,4 @@ charles/__pycache__
 data/__pycache__
 *.pyc
 results
+.ipynb_checkpoints
