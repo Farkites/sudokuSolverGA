@@ -152,7 +152,7 @@ class Population:
         self.history = history
         self.diversity_hist = diversity_hist
 
-    def get_entropy(self, entropy_type='genotypic_v1'):
+    def get_entropy(self, entropy_type='phenotypic'):
 
         distinct_individuals = {}
         for individual in self.individuals:
@@ -162,8 +162,15 @@ class Population:
                 else:
                     distinct_individuals[str(individual.representation)] = 1
 
+            if entropy_type == 'phenotypic':
+                if str(individual.fitness) in distinct_individuals.keys():
+                    distinct_individuals[str(individual.fitness)] += 1
+                else:
+                    distinct_individuals[str(individual.fitness)] = 1
+
         entropy = 0
         for f in distinct_individuals.values():
+            f /= len(distinct_individuals.values())
             entropy += f * np.log10(f)
         return entropy
 
