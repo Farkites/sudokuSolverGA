@@ -8,6 +8,7 @@ from sklearn.model_selection import ParameterGrid
 from definitions import *
 
 from charles.charles import Population, Individual
+from charles.utils import color
 from charles.sudoku_utils import find_init_positions
 from charles.sudoku_main_helper import load_experiments_overview, manage_details_dir, collect_puzzle_data, \
     manage_epoch_results, write_results_to_overview, prepare_diversity_hist_plot, prepare_history_plot
@@ -18,16 +19,17 @@ from charles.mutation import swap_mutation, inversion_mutation, swap_by_row_muta
 from charles.crossover import single_point_co, cycle_co, arithmetic_co, cycle_by_row_co,\
     partially_match_co, partially_match_by_row_co
 
-from configs_available import config_grid_2nd_run_test as config_grid
+from configs_available import config_grid_test_single as config_grid
 
 grid = ParameterGrid(config_grid)
-
+len(grid)
 if __name__ == '__main__':
     # load experiments overview
     run_id, overview = load_experiments_overview()
 
     for gs_id, config in enumerate(grid):
         start = time()
+        print(f'{color.GREEN}grid search run {gs_id} / {len(grid)}{color.END}')
         print(config)
         run_name = f'{run_id}_{gs_id}'
         # create dir for experiment details
