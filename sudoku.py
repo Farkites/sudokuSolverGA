@@ -19,7 +19,7 @@ from charles.mutation import swap_mutation, inversion_mutation, swap_by_row_muta
 from charles.crossover import single_point_co, cycle_co, arithmetic_co, cycle_by_row_co,\
     partially_match_co, partially_match_by_row_co
 
-from configs_available import config_grid_test_single as config_grid
+from configs_available import config_grid_2nd_run_test as config_grid
 
 grid = ParameterGrid(config_grid)
 len(grid)

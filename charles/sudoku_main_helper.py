@@ -53,13 +53,15 @@ def resolve_create_representation(config, puzzle):
         return repr_with_replacement(side)
     elif config['representation'] == 'without_replacement':
         return repr_without_replacement(side)
-    elif config['representation'] == 'rand_mix':
+    elif config['representation'] == 'random_mix':
         res = [
             repr_maintain_init_puzzle(puzzle),
             repr_with_replacement(side),
             repr_without_replacement(side)
         ]
         return res
+    else:
+        raise NotImplementedError
 
 
 def resolve_evaluate_fct(puzzle):
