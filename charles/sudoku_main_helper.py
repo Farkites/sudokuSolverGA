@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from definitions import *
 
 from data.sudoku_data_generator import Sudoku
+from charles.utils import color
 from data import sudoku_data
 
 from charles.sudoku_utils import flatten_board, get_indices, count_duplicates, drop_init_positions, include_init_positions
@@ -18,40 +19,47 @@ from charles.mutation import swap_mutation, inversion_mutation, swap_by_row_muta
 from charles.crossover import single_point_co, cycle_co, arithmetic_co, cycle_by_row_co,\
     partially_match_co, partially_match_by_row_co
 
+def repr_maintain_init_puzzle(puzzle):
+    def create_representation(self):
+        matrix = deepcopy(puzzle.puzzle)
+        for row in matrix:
+            while 0 in row:
+                insert_digit = choice(list(set(range(1, 10)) - set(row)))
+                if insert_digit not in row:
+                    row[row.index(0)] = insert_digit
+        return flatten_board(matrix)
+    return create_representation
+
+def repr_with_replacement(side):
+    def create_representation(self):
+        sol_size = 81
+        valid_set = list(range(1, side + 1))
+        return [choice(valid_set) for i in range(sol_size)]
+    return create_representation
+
+def repr_without_replacement(side):
+    def create_representation(self):
+        sol_size = 81
+        valid_set = [i for _ in range(side) for i in range(1, side + 1)]
+        return sample(valid_set, sol_size)
+    return create_representation
+
 
 def resolve_create_representation(config, puzzle):
     side = puzzle.side
     if config['representation'] == 'maintain_init_puzzle':
-        def create_representation(self):
-            matrix = deepcopy(puzzle.puzzle)
-            for row in matrix:
-                while 0 in row:
-                    insert_digit = choice(list(set(range(1, 10)) - set(row)))
-                    if insert_digit not in row:
-                        row[row.index(0)] = insert_digit
-            return flatten_board(matrix)
-
-        # Individual.create_representation = create_representation
-        sol_size = None
-        valid_set = None
-        replacement = None
+        return repr_maintain_init_puzzle(puzzle)
     elif config['representation'] == 'with_replacement':
-        sol_size = 81
-        valid_set = list(range(1, side + 1))
-
-        def create_representation(self):
-            return [choice(valid_set) for i in range(sol_size)]
-
-        # Individual.create_representation = create_representation
+        return repr_with_replacement(side)
     elif config['representation'] == 'without_replacement':
-        sol_size = 81
-        valid_set = [i for _ in range(side) for i in range(1, side + 1)]
-
-        def create_representation(self):
-            return sample(valid_set, sol_size)
-
-        # Individual.create_representation = create_representation
-    return create_representation
+        return repr_without_replacement(side)
+    elif config['representation'] == 'rand_mix':
+        res = [
+            repr_maintain_init_puzzle(puzzle),
+            repr_with_replacement(side),
+            repr_without_replacement(side)
+        ]
+        return res
 
 
 def resolve_evaluate_fct(puzzle):

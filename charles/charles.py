@@ -1,8 +1,9 @@
-from random import shuffle, choice, sample, random
+from random import shuffle, choice, sample, random, randint
 from operator import attrgetter
 from copy import deepcopy
 from scipy.spatial import distance
 import numpy as np
+import types
 from sklearn.preprocessing import normalize
 
 
@@ -22,7 +23,10 @@ class Individual:
                 self.representation = sample(valid_set, size)
         else:
             self.representation = representation"""
-        self.representation = self.create_representation()
+        if isinstance(self.create_representation, types.MethodType):
+            self.representation = self.create_representation()
+        else:
+            self.representation = self.create_representation[randint(0,2)](self)
         self.fitness = self.evaluate()
 
     def evaluate(self):
