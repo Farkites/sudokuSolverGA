@@ -10,4 +10,8 @@ puzzle_diff_1 = [6, 4, 1, 8, 7, 5, 3, 9, 0, 3, 0, 9, 0, 4, 6, 5, 8, 0, 5, 7, 8, 
 board_diff_1 = [6, 4, 1, 8, 7, 5, 3, 9, 2, 3, 2, 9, 1, 4, 6, 5, 8, 7, 5, 7, 8, 9, 2, 3, 6, 1, 4, 2, 8, 3, 6, 9, 4, 7, 5, 1, 4, 9, 6, 5, 1, 7, 2, 3, 8, 7, 1, 5, 3, 8, 2, 4, 6, 9, 9, 3, 4, 7, 6, 1, 8, 2, 5, 8, 5, 2, 4, 3, 9, 1, 7, 6, 1, 6, 7, 2, 5, 8, 9, 4, 3]
 
 
-
+if __name__ == '__main__':
+    import numpy as np
+    print('ratio of empty fields: ')
+    for diff, puzzle in [(3, puzzle_diff_3), (2, puzzle_diff_2), (1, puzzle_diff_1)]:
+        print(f'{diff}: {np.round(sum(1 if d == 0 else 0 for d in puzzle) / 81, 2)}')
