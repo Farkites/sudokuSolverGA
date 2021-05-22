@@ -32,7 +32,7 @@ def get_row_indices(base):
 
 def get_col_indices(base):
     side = base*base
-    return [np.arange(i, side*side, side) for i in list(range(side))]
+    return [np.arange(i, side*side, side).tolist() for i in list(range(side))]
 
 
 def get_indices(base):
@@ -155,3 +155,4 @@ def build_board_from_vector(flattboard, base=3):
 
     idx = get_row_indices(base)
     return [[flattboard[i] for i in row] for row in idx]
+
