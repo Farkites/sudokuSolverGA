@@ -93,6 +93,27 @@ config_grid_by_row_operators_test = {
 }
 
 
+config_grid_diff_2 = {
+    'difficulty': [2],  # [3,2,1]
+    'epochs': [30],
+    'pop_size': [50],
+    'gens': [1000],
+    'optim': ['min'],
+    'representation': ['maintain_init_puzzle'],
+    'selection': ['tournament'],# 'fps'], # [tournament, fps]
+    'mutation': ['swap_mutation', 'inversion_mutation'],
+    'crossover': ['single_point_co', 'cycle_by_row_co', 'partially_match_by_row_co'],
+    'co_p': [.95, .85, .5],#np.arange(.7, 1.05, .15).tolist(),
+    'mu_p': [0.05, .2, .8, .9], #np.arange(.05, 1, .25).tolist(),
+    'elitism': [True],
+    'fitness_sharing': [False],
+    'diversity_measure': [True],
+    'early_stopping_patience': [100]
+}
+
+
+
+
 config_grid_test_grid = {
     'difficulty': [3],  # [3,2,1]
     'epochs': [2],
