@@ -111,7 +111,41 @@ config_grid_diff_2 = {
     'early_stopping_patience': [100]
 }
 
+config_grid_test_maximization = {
+    'difficulty': [2],  # [3,2,1]
+    'epochs': [2],
+    'pop_size': [20],
+    'gens': [100],
+    'optim': ['max'],
+    'representation': ['maintain_init_puzzle'],
+    'selection': ['tournament'],# 'fps'], # [tournament, fps]
+    'mutation': ['swap_mutation', 'inversion_mutation'],
+    'crossover': ['single_point_co', 'cycle_by_row_co', 'partially_match_by_row_co'],
+    'co_p': [.95],#np.arange(.7, 1.05, .15).tolist(),
+    'mu_p': [0.05], #np.arange(.05, 1, .25).tolist(),
+    'elitism': [True],
+    'fitness_sharing': [False],
+    'diversity_measure': [True],
+    'early_stopping_patience': [20]
+}
 
+config_grid_test_maximization_2 = {
+    'difficulty': [2],  # [3,2,1]
+    'epochs': [2],
+    'pop_size': [20],
+    'gens': [100],
+    'optim': ['max'],
+    'representation': ['random_mix', 'with_replacement', 'without_replacement'],
+    'selection': ['tournament'],# 'fps'], # [tournament, fps]
+    'mutation': ['swap_mutation', 'inversion_mutation'],
+    'crossover': ['single_point_co'],
+    'co_p': [.95],#np.arange(.7, 1.05, .15).tolist(),
+    'mu_p': [0.05], #np.arange(.05, 1, .25).tolist(),
+    'elitism': [True],
+    'fitness_sharing': [False],
+    'diversity_measure': [True],
+    'early_stopping_patience': [20]
+}
 
 
 config_grid_test_grid = {
