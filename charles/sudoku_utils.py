@@ -6,11 +6,13 @@ from charles.charles import Individual
 
 def get_box_indices(base=3):
     """
+    Computes box-wise list of indices, where every inner list represents a box
     :param base: length of inner box
     :return: row wise list of box indices
     """
     # total length of outer box
     side=base*base
+    # init with list of Nones
     box_idx = [None for _ in range(side)]
     # flat index of length i*j
     pos = 0
@@ -26,16 +28,31 @@ def get_box_indices(base=3):
 
 
 def get_row_indices(base):
+    """
+    Computes row-wise list of indices, where every inner list represents a row
+    :param base: length of inner box
+    :return: row-wise list of row indices
+    """
     side = base*base
     return [list(range(i, i + side)) for i in np.arange(0, side*side, side)]
 
 
 def get_col_indices(base):
+    """
+    Computes col-wise list of indices, where every inner list represents a col
+    :param base: length of inner box
+    :return: row-wise list of col indices
+    """
     side = base*base
     return [np.arange(i, side*side, side).tolist() for i in list(range(side))]
 
 
 def get_indices(base):
+    """
+    collects list of all 3 types of list index representations of a Sudoku board
+    :param base:
+    :return: list of all 3 types of list index representations of a Sudoku board
+    """
     row_idx = get_row_indices(base)
     col_idx = get_col_indices(base)
     box_idx = get_box_indices(base)
@@ -43,8 +60,13 @@ def get_indices(base):
 
 
 def count_duplicates(seq):
-    '''takes as argument a sequence and
-    returns the number of duplicate elements'''
+    """
+    based on https://stackoverflow.com/questions/52090212/counting-the-number-of-duplicates-in-a-list/52090695
+    takes as argument a sequence and
+    returns the number of duplicate elements
+    :param seq: list of numbers
+    :return: int of duplicate numbers inside list
+    """
 
     counter = 0
     seen = set()
@@ -56,19 +78,6 @@ def count_duplicates(seq):
     return counter
 
 
-def get_pop_specs(option, side):
-    if option == 1:
-        replacement = False
-        valid_set = [i for _ in range(side) for i in range(1, side +1)]
-
-    elif option == 2:
-        replacement = True
-        valid_set = list(range(1,side+1))
-
-
-    return replacement, valid_set
-
-
 def find_init_positions(flat_puzzle):
     init_positions = []
     for idx, v in enumerate(flat_puzzle):
@@ -78,23 +87,72 @@ def find_init_positions(flat_puzzle):
 
 
 def drop_init_positions(flat_board, init_positions):
+    """
+    Drop initial positions
+    :param flat_board: vector representation of a Sudoku board
+    :param init_positions: list of tuples with (idx, value) of the puzzles initial positions
+    :return: vector representation of the supplied board without the values at the initial positions
+    """
+    # extract only the indexes from the tuple
     init_idx = [i[0] for i in init_positions]
+    # loop over flatboard and only return values at positions != init positions
     return [v for pos, v in enumerate(flat_board) if pos not in init_idx]
 
 
 def include_init_positions(flat_board_without_init, init_postitions):
+    """
+    Insert inital positions
+    :param flat_board_without_init: vector representation of Sudoku board,
+    where init positions previously have been dropped through drop_init_positions
+    :param init_positions: list of tuples with (idx, value) of the puzzles initial positions
+    :return: vector representation of the supplied board with the values at the initial positions inserted
+    """
+
     flat_board_inserted = deepcopy(flat_board_without_init)
+    # loop over inital positions and insert value back into the flatboard one by one
     for pos in init_postitions:
         flat_board_inserted.insert(pos[0], pos[1])
     return flat_board_inserted
 
 
 def flatten_board(board):
+    """
+    Transform matrix representation of a Sudoku board into a row-wise flat representation
+    :param board: matrix representation of a Sudoku board
+    :return: vector, row-wise flat representation of a Sudoku board
+    """
     return [n for row in board for n in row]
+
+
+def build_board_from_vector(flattboard, base=3):
+    """
+    Reconstructs matrix representation of a Sudoku board, assuming a row-wise transformation
+    :param flattboard: vector representation
+    :param base: size of the inner box of a Sudoku board
+    :return: lists in list emulating matrix representation of a Sudoku board
+    """
+
+    # verify that shape of flattboard matches the expected length
+    if len(flattboard) != base**4:
+        raise ValueError('')
+
+    # Extract vector from Individual if supllied board it of that type
+    if isinstance(flattboard, Individual):
+        flattboard = flattboard.representation
+
+    # assert that flattboard is of type list
+    if not isinstance(flattboard, list):
+        raise ValueError('flattboard needs to be of type list')
+
+    # fetch row-wise indexes of board representation
+    idx = get_row_indices(base)
+    # loop over rows (outer) and positions insed row (inner) to reconstruct row-wise list of lists
+    return [[flattboard[i] for i in row] for row in idx]
 
 
 def pretty_print(board, base=3, puzzle=None, solution=None, mark=False):
     """
+    refactored from Sudoku class, currently not used. Use class method instead
     Pretty prints the board
     :param board: Matrix representation of the sudoku board, which will be printed.
     :param base: size of the inner grid
@@ -141,18 +199,3 @@ def pretty_print(board, base=3, puzzle=None, solution=None, mark=False):
     for r in range(1, side + 1):
         print("".join(n + s for n, s in zip(nums[r - 1], line1.split("."))))
         print([line2, line3, line4][(r % side == 0) + (r % base == 0)])
-
-
-def build_board_from_vector(flattboard, base=3):
-    if len(flattboard) != base**4:
-        raise ValueError('')
-
-    if isinstance(flattboard, Individual):
-        flattboard = flattboard.representation
-
-    if not isinstance(flattboard, list):
-        raise ValueError('flattboard needs to be of type list')
-
-    idx = get_row_indices(base)
-    return [[flattboard[i] for i in row] for row in idx]
-
